@@ -65,6 +65,66 @@ h1, h2, h3, h4, .font-heading {
 .tts-active { background-color: hsl(38 92% 80%); border-radius: 4px; }
 
 @media print {
-    .no-print { display: none !important; }
-    body { background: white; }
+    /* Sembunyikan elemen antarmuka browser / web */
+    .no-print, header, nav, footer, button, .sheet-content {
+        display: none !important;
+    }
+
+    body {
+        background: #ffffff !important;
+        color: #111827 !important;
+        font-size: 11pt !important;
+        line-height: 1.5 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    /* Container utama cetak full-page */
+    .max-w-md, .max-w-xl, .max-w-2xl, .max-w-3xl, .container {
+        max-width: 100% !important;
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+    }
+
+    /* Kartu Bimbingan A4 */
+    [data-testid="bunda-ayah-card"] {
+        border: 2px solid #0F766E !important;
+        border-radius: 12px !important;
+        padding: 24px !important;
+        box-shadow: none !important;
+        background: #ffffff !important;
+        page-break-inside: avoid;
+    }
+
+    /* Kotak-kotak materi */
+    [data-testid^="seksi-"] {
+        border: 1px solid #d1d5db !important;
+        border-radius: 8px !important;
+        background: #f9fafb !important;
+        margin-bottom: 12px !important;
+        padding: 12px 16px !important;
+        page-break-inside: avoid;
+    }
+
+    /* Header khusus cetak */
+    [data-testid="bunda-ayah-card"]::before {
+        content: "📄 LEMBAR PANDUAN BIMBINGAN BELAJAR — TUTORORANGTUA AI 🇮🇩";
+        display: block;
+        font-size: 14pt;
+        font-weight: 800;
+        color: #0F766E;
+        border-bottom: 2px solid #0F766E;
+        padding-bottom: 8px;
+        margin-bottom: 16px;
+        text-align: center;
+        font-family: 'Manrope', sans-serif;
+    }
+
+    /* Kunci jawaban saat dicetak */
+    [data-testid="child-proof-lock"] {
+        display: none !important;
+    }
 }

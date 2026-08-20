@@ -94,29 +94,51 @@ export async function statusAI() {
   }
 }
 
-// Pilih suara Bahasa Indonesia yang paling ramah (prioritas suara perempuan)
-export function pilihSuaraID() {
+// Pilih suara Bahasa Indonesia yang paling ramah dan natural
+export function pilihSuaraID(preferGender = "female") {
   if (!("speechSynthesis" in window)) return null;
   const voices = window.speechSynthesis.getVoices() || [];
-  return (
-    voices.find((v) => v.lang === "id-ID" && /female|wanita|perempuan|damayanti|sari|female/i.test(v.name)) ||
-    voices.find((v) => v.lang === "id-ID" && /google/i.test(v.name)) ||
-    voices.find((v) => v.lang === "id-ID") ||
-    voices.find((v) => (v.lang || "").toLowerCase().startsWith("id")) ||
-    null
-  );
+  const idVoices = voices.filter((v) => (v.lang || "").toLowerCase().replace("_", "-").startsWith("id"));
+  
+  if (idVoices.length === 0) return null;
+
+  if (preferGender === "female") {
+    return (
+      idVoices.find((v) => /natural|online|neural/i.test(v.name) && /gadis|female|wanita|perempuan/i.test(v.name)) ||
+      idVoices.find((v) => /google/i.test(v.name)) ||
+      idVoices.find((v) => /gadis|damayanti|sari|female|wanita/i.test(v.name)) ||
+      idVoices[0]
+    );
+  } else {
+    return (
+      idVoices.find((v) => /natural|online|neural/i.test(v.name) && /ardi|male|pria|laki/i.test(v.name)) ||
+      idVoices.find((v) => /ardi|andika|male|pria/i.test(v.name)) ||
+      idVoices[0]
+    );
+  }
+}
+
+// Bersihkan teks dari simbol markdown dan tanda kurung berlebih agar intonasi TTS lancar
+function bersihkanTeksUntukTTS(teks) {
+  if (!teks) return "";
+  return teks
+    .replace(/\*+/g, "") // Hapus tanda tebal asterisks
+    .replace(/["“”]/g, "") // Hapus tanda kutip ganda
+    .replace(/[()]/g, ", ") // Ubah kurung jadi koma agar ada jeda nafas alami
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 let cancelCurrentNarasi = null;
 
-// Narasikan panduan segmen-demi-segmen dengan sorotan teks + suara ramah
-export function narasikan(segments, onSegStart, onEnd, onError) {
+// Narasikan panduan segmen-demi-segmen dengan suara ramah & intonasi hangat
+export function narasikan(segments, onSegStart, onEnd, onError, preferGender = "female") {
   if (!("speechSynthesis" in window)) {
     onError && onError();
     return false;
   }
 
-  // Hentikan narasi yang sedang berjalan sebelumnya
+  // Hentikan narasi sebelumnya
   stopBicara();
 
   let dibatalkan = false;
@@ -127,7 +149,7 @@ export function narasikan(segments, onSegStart, onEnd, onError) {
     }
   };
 
-  const voice = pilihSuaraID();
+  const voice = pilihSuaraID(preferGender);
   let i = 0;
   let adaSukses = false;
 
@@ -140,10 +162,12 @@ export function narasikan(segments, onSegStart, onEnd, onError) {
       return;
     }
     const seg = segments[i];
-    const u = new SpeechSynthesisUtterance(seg.teks);
+    const teksBersih = bersihkanTeksUntukTTS(seg.teks);
+    const u = new SpeechSynthesisUtterance(teksBersih);
     u.lang = "id-ID";
-    u.rate = 0.92;
-    u.pitch = 1.12;
+    // Intonasi hangat dan santun
+    u.rate = 0.95;
+    u.pitch = 1.02;
     u.volume = 1;
     if (voice) u.voice = voice;
 
@@ -177,10 +201,12 @@ export function narasikan(segments, onSegStart, onEnd, onError) {
 export function bicara(teks, onWord, onEnd) {
   if (!("speechSynthesis" in window)) return null;
   stopBicara();
-  const u = new SpeechSynthesisUtterance(teks);
+  const u = new SpeechSynthesisUtterance(bersihkanTeksUntukTTS(teks));
   u.lang = "id-ID";
-  u.rate = 0.95;
-  u.pitch = 1.05;
+  u.rate = 0.96;
+  u.pitch = 1.02;
+  const voice = pilihSuaraID("female");
+  if (voice) u.voice = voice;
   if (onWord) {
     u.onboundary = (ev) => onWord(ev.charIndex);
   }

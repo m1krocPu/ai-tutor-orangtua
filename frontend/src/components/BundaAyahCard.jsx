@@ -73,6 +73,7 @@ export const BundaAyahCard = ({ soal, panggilan = "Bunda", onUpvote }) => {
     // pastikan daftar suara termuat
     if ("speechSynthesis" in window) window.speechSynthesis.getVoices();
     setSpeaking(true);
+    const gender = panggilan === "Ayah" ? "male" : "female";
     const ok = narasikan(
       segmenNarasi,
       (id) => setSegAktif(id),
@@ -80,45 +81,87 @@ export const BundaAyahCard = ({ soal, panggilan = "Bunda", onUpvote }) => {
       () => {
         setSpeaking(false);
         setSegAktif(null);
-        toast.error("Maaf Bun, perangkat ini belum mendukung suara narator Bahasa Indonesia.");
-      }
+        toast.error(`Maaf ${panggilan}, perangkat ini belum mendukung suara narator Bahasa Indonesia.`);
+      },
+      gender
     );
     if (!ok) {
       setSpeaking(false);
-      toast.error("Maaf Bun, perangkat ini belum mendukung suara narator.");
+      toast.error(`Maaf ${panggilan}, perangkat ini belum mendukung suara narator.`);
     }
   };
 
+  // Sanitasi teks agar pesan WhatsApp tidak rusak oleh simbol / HTML entities
+  const bersihkanUntukWA = (teks) => {
+    if (!teks) return "";
+    return teks
+      .replace(/&quot;/g, '"')
+      .replace(/&amp;/g, '&')
+      .replace(/&#39;/g, "'")
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/\*+/g, '') // Bersihkan tanda asterisk ganda bawaan AI agar formatting WA rapi
+      .trim();
+  };
+
   const kirimWA = () => {
+    const judul = bersihkanUntukWA(soal.judul_singkat || "Panduan Bimbingan PR");
+    const konsep = bersihkanUntukWA(soal.konsep_kurikulum);
+    const analogi = bersihkanUntukWA(soal.analogi_dapur);
+    const emosi = bersihkanUntukWA(soal.skrip_penjinak_emosi);
+
+    let skripText = "";
+    skripList.forEach((k, idx) => {
+      const langkahNo = k.langkah || idx + 1;
+      const tanya = bersihkanUntukWA(k.tanya_anak);
+      const jikaSalah = bersihkanUntukWA(k.jika_anak_salah);
+      skripText += `${langkahNo}. "${tanya}"\n`;
+      if (jikaSalah) {
+        skripText += `   ↳ _Jika ragu/salah:_ "${jikaSalah}"\n`;
+      }
+    });
+
     const pesan =
-      `*Panduan Bimbingan PR dari TutorOrangTua AI* 🇮🇩\n\n` +
-      `📌 *${soal.judul_singkat || "Bimbingan PR"}*\n\n` +
-      `🎯 *Konsep:* ${soal.konsep_kurikulum || ""}\n\n` +
-      `💡 *Analogi:* ${soal.analogi_dapur || ""}\n\n` +
-      `🗣️ *Skrip Bimbingan:*\n` +
-      skripList.map((k) => `${k.langkah || ""}. ${k.tanya_anak || ""}`).join("\n") +
-      `\n\n🚨 *Jika anak rewel:* ${soal.skrip_penjinak_emosi || ""}` +
-      `\n\n_Dibuat dengan penuh kasih oleh TutorOrangTua AI_`;
+      `*PANDUAN BIMBINGAN PR — TUTORORANGTUA AI* 🇮🇩\n\n` +
+      `📌 *Topik:* ${judul}\n\n` +
+      `🎯 *Maksud & Konsep:*\n${konsep}\n\n` +
+      `💡 *Analogi Benda Rumah Tangga:*\n"${analogi}"\n\n` +
+      `🗣️ *Langkah Pancingan Berpikir (Sokratik):*\n${skripText}\n` +
+      (emosi ? `🚨 *Taktik Saat Anak Lelah / Rewel:*\n${emosi}\n\n` : "") +
+      `🔒 _100% Anti-Contekan · Belajar Sambil Menyayangi_\n` +
+      `👉 Dibuat via TutorOrangTua AI`;
+
     window.open(`https://wa.me/?text=${encodeURIComponent(pesan)}`, "_blank");
   };
 
-  // Buat gambar kutipan cantik untuk Status WhatsApp (canvas)
-  const bungkusTeks = (ctx, teks, x, y, maxW, lineH) => {
+  // Bungkus teks canvas dengan batas baris aman agar tidak meluap
+  const bungkusTeks = (ctx, teks, x, y, maxW, lineH, maxBaris = 12) => {
+    if (!teks) return y;
     const kata = teks.split(" ");
     let baris = "";
     let yy = y;
+    let jumlahBaris = 0;
+
     for (let n = 0; n < kata.length; n++) {
       const tes = baris + kata[n] + " ";
       if (ctx.measureText(tes).width > maxW && n > 0) {
+        jumlahBaris++;
+        if (jumlahBaris >= maxBaris) {
+          ctx.fillText(baris.trim() + "...", x, yy);
+          return yy + lineH;
+        }
         ctx.fillText(baris.trim(), x, yy);
         baris = kata[n] + " ";
         yy += lineH;
-      } else baris = tes;
+      } else {
+        baris = tes;
+      }
     }
     ctx.fillText(baris.trim(), x, yy);
     return yy + lineH;
   };
 
+  // Buat gambar kutipan adaptif untuk Status WhatsApp (1080 x 1920 HD)
   const buatKutipan = async () => {
     setMembuatKutipan(true);
     try {
@@ -126,23 +169,28 @@ export const BundaAyahCard = ({ soal, panggilan = "Bunda", onUpvote }) => {
       const c = document.createElement("canvas");
       c.width = W; c.height = H;
       const ctx = c.getContext("2d");
-      // Latar zamrud
-      ctx.fillStyle = "#0F766E"; ctx.fillRect(0, 0, W, H);
-      // Ornamen lingkaran
-      ctx.fillStyle = "rgba(245,158,11,0.18)";
-      ctx.beginPath(); ctx.arc(W - 60, 180, 260, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = "rgba(255,251,235,0.10)";
-      ctx.beginPath(); ctx.arc(120, H - 160, 300, 0, Math.PI * 2); ctx.fill();
-      // Header brand
+
+      // 1. Latar Zamrud Premium
+      ctx.fillStyle = "#0F766E";
+      ctx.fillRect(0, 0, W, H);
+
+      // Ornamen Latar Belakang
+      ctx.fillStyle = "rgba(245, 158, 11, 0.15)";
+      ctx.beginPath(); ctx.arc(W - 40, 160, 240, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "rgba(255, 251, 235, 0.08)";
+      ctx.beginPath(); ctx.arc(100, H - 180, 280, 0, Math.PI * 2); ctx.fill();
+
+      // 2. Header Brand
       ctx.textAlign = "center";
       ctx.fillStyle = "#FFFBEB";
-      ctx.font = "bold 52px Manrope, sans-serif";
-      ctx.fillText("👨‍👩‍👧‍👦 TutorOrangTua AI 🇮🇩", W / 2, 200);
+      ctx.font = "bold 48px Manrope, sans-serif";
+      ctx.fillText("👨‍👩‍👧‍👦 TutorOrangTua AI 🇮🇩", W / 2, 170);
       ctx.fillStyle = "#F59E0B";
-      ctx.font = "600 34px 'DM Sans', sans-serif";
-      ctx.fillText("Bimbing PR ala Kurikulum Merdeka", W / 2, 260);
-      // Kartu krem
-      const cardX = 90, cardY = 360, cardW = W - 180, cardH = 1180, r = 48;
+      ctx.font = "600 30px 'DM Sans', sans-serif";
+      ctx.fillText("Bimbing PR Santun & Menyenangkan", W / 2, 230);
+
+      // 3. Kartu Putih Krem Adaptif (Ukuran Besar & Aman)
+      const cardX = 75, cardY = 300, cardW = W - 150, cardH = 1380, r = 44;
       ctx.fillStyle = "#FFFBEB";
       ctx.beginPath();
       ctx.moveTo(cardX + r, cardY);
@@ -150,37 +198,55 @@ export const BundaAyahCard = ({ soal, panggilan = "Bunda", onUpvote }) => {
       ctx.arcTo(cardX + cardW, cardY + cardH, cardX, cardY + cardH, r);
       ctx.arcTo(cardX, cardY + cardH, cardX, cardY, r);
       ctx.arcTo(cardX, cardY, cardX + cardW, cardY, r);
-      ctx.closePath(); ctx.fill();
-      // Emoji + Judul
+      ctx.closePath();
+      ctx.fill();
+
+      // 4. Emoji + Judul
       ctx.textAlign = "center";
-      ctx.font = "120px sans-serif";
-      ctx.fillText(soal.judul_emoji || "💡", W / 2, cardY + 170);
+      ctx.font = "90px sans-serif";
+      ctx.fillText(soal.judul_emoji || "💡", W / 2, cardY + 120);
+
       ctx.fillStyle = "#0F766E";
-      ctx.font = "bold 56px Manrope, sans-serif";
-      let yy = bungkusTeks(ctx, soal.judul_singkat, W / 2, cardY + 280, cardW - 160, 66);
-      // Label analogi
-      ctx.fillStyle = "#F59E0B";
-      ctx.font = "bold 30px 'DM Sans', sans-serif";
-      ctx.fillText("💡 ANALOGI HANGAT DI RUMAH", W / 2, yy + 40);
-      // Isi analogi
+      ctx.font = "bold 46px Manrope, sans-serif";
+      const judulBersih = bersihkanUntukWA(soal.judul_singkat || "Panduan Bimbingan PR");
+      let yy = bungkusTeks(ctx, judulBersih, W / 2, cardY + 200, cardW - 140, 56, 2);
+
+      // 5. Label Analogi
+      ctx.fillStyle = "#D97706";
+      ctx.font = "bold 26px 'DM Sans', sans-serif";
+      ctx.fillText("💡 ANALOGI HANGAT DI RUMAH", W / 2, yy + 35);
+
+      // 6. Isi Analogi (Font Adaptif Berdasarkan Panjang Kalimat)
+      const analogiBersih = bersihkanUntukWA(soal.analogi_dapur);
+      const isLongText = analogiBersih.length > 200;
       ctx.fillStyle = "#134E4A";
-      ctx.font = "40px 'DM Sans', sans-serif";
-      yy = bungkusTeks(ctx, `"${soal.analogi_dapur}"`, W / 2, yy + 110, cardW - 140, 56);
-      // Garis
-      ctx.strokeStyle = "rgba(15,118,110,0.2)"; ctx.lineWidth = 3;
-      ctx.beginPath(); ctx.moveTo(cardX + 120, yy + 30); ctx.lineTo(cardX + cardW - 120, yy + 30); ctx.stroke();
-      // Ajakan sokratik
+      ctx.font = isLongText ? "31px 'DM Sans', sans-serif" : "36px 'DM Sans', sans-serif";
+      const lineH = isLongText ? 44 : 50;
+      yy = bungkusTeks(ctx, `"${analogiBersih}"`, W / 2, yy + 85, cardW - 120, lineH, isLongText ? 9 : 7);
+
+      // 7. Garis Pemisah Halus
+      ctx.strokeStyle = "rgba(15, 118, 110, 0.18)";
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(cardX + 80, yy + 25);
+      ctx.lineTo(cardX + cardW - 80, yy + 25);
+      ctx.stroke();
+
+      // 8. Ajakan Sokratik
       ctx.fillStyle = "#0F766E";
-      ctx.font = "italic 36px 'DM Sans', sans-serif";
-      const langkah1 = soal.skrip_sokratik?.[0]?.tanya_anak || "";
-      bungkusTeks(ctx, `🗣️ "${langkah1}"`, W / 2, yy + 100, cardW - 140, 52);
-      // Footer
+      ctx.font = "italic 30px 'DM Sans', sans-serif";
+      const langkah1 = bersihkanUntukWA(skripList[0]?.tanya_anak || "");
+      if (langkah1) {
+        bungkusTeks(ctx, `🗣️ Pancingan: "${langkah1}"`, W / 2, yy + 75, cardW - 120, 44, 3);
+      }
+
+      // 9. Footer di Luar Kartu (Posisi Terkunci Aman di Bagian Bawah Layar)
       ctx.fillStyle = "#FFFBEB";
-      ctx.font = "600 32px 'DM Sans', sans-serif";
-      ctx.fillText("🔒 100% Anti-Contekan · Belajar Sambil Menyayangi", W / 2, cardY + cardH + 90);
+      ctx.font = "600 30px 'DM Sans', sans-serif";
+      ctx.fillText("🔒 100% Anti-Contekan · Belajar Sambil Menyayangi", W / 2, 1780);
       ctx.fillStyle = "#F59E0B";
-      ctx.font = "bold 30px 'DM Sans', sans-serif";
-      ctx.fillText("Buat panduanmu sendiri di TutorOrangTua AI", W / 2, cardY + cardH + 145);
+      ctx.font = "bold 28px 'DM Sans', sans-serif";
+      ctx.fillText("Buat panduanmu di TutorOrangTua AI", W / 2, 1835);
 
       const url = c.toDataURL("image/png");
       setKutipanUrl(url);

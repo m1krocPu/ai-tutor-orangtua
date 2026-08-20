@@ -94,6 +94,53 @@ export async function statusAI() {
   }
 }
 
+// Pilih suara Bahasa Indonesia yang paling ramah (prioritas suara perempuan)
+export function pilihSuaraID() {
+  if (!("speechSynthesis" in window)) return null;
+  const voices = window.speechSynthesis.getVoices() || [];
+  return (
+    voices.find((v) => v.lang === "id-ID" && /female|wanita|perempuan|damayanti|sari|female/i.test(v.name)) ||
+    voices.find((v) => v.lang === "id-ID" && /google/i.test(v.name)) ||
+    voices.find((v) => v.lang === "id-ID") ||
+    voices.find((v) => (v.lang || "").toLowerCase().startsWith("id")) ||
+    null
+  );
+}
+
+// Narasikan panduan segmen-demi-segmen dengan sorotan teks + suara ramah
+export function narasikan(segments, onSegStart, onEnd, onError) {
+  if (!("speechSynthesis" in window)) {
+    onError && onError();
+    return false;
+  }
+  window.speechSynthesis.cancel();
+  const voice = pilihSuaraID();
+  let i = 0;
+  let adaSukses = false;
+  const next = () => {
+    if (i >= segments.length) {
+      if (!adaSukses && onError) onError();
+      else onEnd && onEnd();
+      return;
+    }
+    const seg = segments[i];
+    const u = new SpeechSynthesisUtterance(seg.teks);
+    u.lang = "id-ID";
+    u.rate = 0.92;
+    u.pitch = 1.12;
+    u.volume = 1;
+    if (voice) u.voice = voice;
+    u.onstart = () => { adaSukses = true; onSegStart && onSegStart(seg.id, i); };
+    u.onend = () => { i += 1; next(); };
+    u.onerror = () => { i += 1; next(); };
+    // sorot segmen segera (fallback bila onstart tak terpanggil)
+    onSegStart && onSegStart(seg.id, i);
+    window.speechSynthesis.speak(u);
+  };
+  next();
+  return true;
+}
+
 // Text-to-Speech Bahasa Indonesia (Web Speech API)
 export function bicara(teks, onWord, onEnd) {
   if (!("speechSynthesis" in window)) return null;

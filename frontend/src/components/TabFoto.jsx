@@ -151,7 +151,7 @@ export const TabFoto = ({ onSimpanRiwayat, initialHasil, panggilanDefault = "Bun
       setAktifSoal(0);
       if (data.sumber === "offline") toast.info("Mode Cadangan aktif — panduan contoh ditampilkan.");
       const judul = data.daftar_soal?.[0]?.judul_singkat || "Bimbingan PR";
-      onSimpanRiwayat && onSimpanRiwayat({ judul, waktu: new Date().toLocaleString("id-ID"), data, panggilan });
+      onSimpanRiwayat && onSimpanRiwayat({ judul, waktu: new Date().toLocaleString("id-ID"), ts: Date.now(), mapel, jenjang, data, panggilan });
     } catch (e) {
       toast.error("Maaf Bun, gagal menyusun panduan. Coba lagi ya.");
     } finally {

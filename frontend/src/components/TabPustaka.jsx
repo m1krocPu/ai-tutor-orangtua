@@ -22,7 +22,8 @@ export const TabPustaka = ({ onSimpanRiwayat }) => {
     const soal = toSoal(t);
     setTerpilih({ soal, judul: t.judul });
     onSimpanRiwayat && onSimpanRiwayat({
-      judul: t.judul, waktu: new Date().toLocaleString("id-ID"),
+      judul: t.judul, waktu: new Date().toLocaleString("id-ID"), ts: Date.now(),
+      mapel: t.mapel, jenjang: t.kelas, fase: t.fase,
       data: { daftar_soal: [soal] }, panggilan: "Bunda",
     });
   };

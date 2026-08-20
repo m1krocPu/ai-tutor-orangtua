@@ -7,19 +7,24 @@ import {
 import { ChildProofLock } from "./ChildProofLock";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
-import { mintaSpontan, bicara, stopBicara } from "../lib/api";
+import { mintaSpontan, narasikan, stopBicara } from "../lib/api";
 import { toast } from "sonner";
 
-const Section = ({ icon: Icon, judul, tint, children, testid }) => (
+const Section = ({ icon: Icon, judul, tint, children, testid, active }) => (
   <div
     data-testid={testid}
-    className={`rounded-2xl border border-border p-4 ${tint}`}
+    className={`rounded-2xl border p-4 transition-all duration-300 ${tint} ${
+      active ? "border-secondary ring-2 ring-secondary ring-offset-1 scale-[1.01]" : "border-border"
+    }`}
   >
     <div className="flex items-center gap-2 mb-2">
       <span className="grid place-items-center w-8 h-8 rounded-full bg-white/70 shrink-0">
         <Icon className="w-4 h-4 text-primary" />
       </span>
-      <h4 className="font-heading font-bold text-sm text-foreground">{judul}</h4>
+      <h4 className="font-heading font-bold text-sm text-foreground flex items-center gap-1.5">
+        {judul}
+        {active && <span className="text-secondary animate-pulse">🔊</span>}
+      </h4>
     </div>
     <div className="text-sm leading-relaxed text-foreground/90">{children}</div>
   </div>
@@ -30,24 +35,44 @@ export const BundaAyahCard = ({ soal, panggilan = "Bunda", onUpvote }) => {
   const [spontanA, setSpontanA] = useState("");
   const [loadingSpontan, setLoadingSpontan] = useState(false);
   const [speaking, setSpeaking] = useState(false);
+  const [segAktif, setSegAktif] = useState(null);
 
   if (!soal) return null;
 
-  const teksLengkap = [
-    `Konsep: ${soal.konsep_kurikulum}`,
-    `Analogi: ${soal.analogi_dapur}`,
-    ...soal.skrip_sokratik.map((k) => `Langkah ${k.langkah}. ${k.tanya_anak}`),
-    `Penenang: ${soal.skrip_penjinak_emosi}`,
-  ].join(". ");
+  const segmenNarasi = [
+    { id: "konsep", teks: `Halo ${panggilan}. Yuk kita pahami dulu konsepnya. ${soal.konsep_kurikulum}` },
+    { id: "analogi", teks: `Sekarang, mari pakai analogi sederhana. ${soal.analogi_dapur}` },
+    ...soal.skrip_sokratik.map((k, idx) => ({
+      id: `skrip-${idx}`,
+      teks: `Langkah ke ${k.langkah}. Coba tanyakan pada si Kecil: ${k.tanya_anak}`,
+    })),
+    { id: "emosi", teks: `Jika si Kecil mulai rewel atau malas, tenangkan dengan lembut. ${soal.skrip_penjinak_emosi}` },
+  ];
 
   const putarSuara = () => {
     if (speaking) {
       stopBicara();
       setSpeaking(false);
+      setSegAktif(null);
       return;
     }
+    // pastikan daftar suara termuat
+    if ("speechSynthesis" in window) window.speechSynthesis.getVoices();
     setSpeaking(true);
-    bicara(teksLengkap, null, () => setSpeaking(false));
+    const ok = narasikan(
+      segmenNarasi,
+      (id) => setSegAktif(id),
+      () => { setSpeaking(false); setSegAktif(null); },
+      () => {
+        setSpeaking(false);
+        setSegAktif(null);
+        toast.error("Maaf Bun, perangkat ini belum mendukung suara narator Bahasa Indonesia.");
+      }
+    );
+    if (!ok) {
+      setSpeaking(false);
+      toast.error("Maaf Bun, perangkat ini belum mendukung suara narator.");
+    }
   };
 
   const kirimWA = () => {
@@ -93,18 +118,18 @@ export const BundaAyahCard = ({ soal, panggilan = "Bunda", onUpvote }) => {
       </div>
 
       <div className="p-4 space-y-3">
-        <Section icon={Target} judul="Maksud & Konsep Kurikulum Merdeka" tint="bg-primary/5" testid="seksi-konsep">
+        <Section icon={Target} judul="Maksud & Konsep Kurikulum Merdeka" tint="bg-primary/5" testid="seksi-konsep" active={segAktif === "konsep"}>
           {soal.konsep_kurikulum}
         </Section>
 
-        <Section icon={Lightbulb} judul="Analogi Benda Dapur & Rumah" tint="bg-secondary/10" testid="seksi-analogi">
+        <Section icon={Lightbulb} judul="Analogi Benda Dapur & Rumah" tint="bg-secondary/10" testid="seksi-analogi" active={segAktif === "analogi"}>
           {soal.analogi_dapur}
         </Section>
 
-        <Section icon={MessageSquareText} judul="Skrip Bimbingan 3 Langkah Sokratik" tint="bg-muted" testid="seksi-skrip">
+        <Section icon={MessageSquareText} judul="Skrip Bimbingan 3 Langkah Sokratik" tint="bg-muted" testid="seksi-skrip" active={segAktif && segAktif.startsWith("skrip")}>
           <div className="space-y-3">
-            {soal.skrip_sokratik.map((k) => (
-              <div key={k.langkah} className="relative pl-8">
+            {soal.skrip_sokratik.map((k, idx) => (
+              <div key={k.langkah} className={`relative pl-8 rounded-lg transition-all duration-300 ${segAktif === `skrip-${idx}` ? "bg-secondary/25 py-2 pr-2 -ml-1 pl-9" : ""}`}>
                 <span className="absolute left-0 top-0 grid place-items-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold">
                   {k.langkah}
                 </span>
@@ -119,7 +144,7 @@ export const BundaAyahCard = ({ soal, panggilan = "Bunda", onUpvote }) => {
           </div>
         </Section>
 
-        <Section icon={HeartHandshake} judul="Taktik Penjinak Emosi & Mogok Belajar" tint="bg-rose-50" testid="seksi-emosi">
+        <Section icon={HeartHandshake} judul="Taktik Penjinak Emosi & Mogok Belajar" tint="bg-rose-50" testid="seksi-emosi" active={segAktif === "emosi"}>
           {soal.skrip_penjinak_emosi}
         </Section>
 
@@ -177,9 +202,9 @@ export const BundaAyahCard = ({ soal, panggilan = "Bunda", onUpvote }) => {
           <Button data-testid="btn-wa" onClick={kirimWA} variant="outline" className="rounded-xl justify-start gap-2 border-primary/30">
             <Share2 className="w-4 h-4 text-primary" /> Kirim ke WhatsApp
           </Button>
-          <Button data-testid="btn-tts" onClick={putarSuara} variant="outline" className="rounded-xl justify-start gap-2 border-primary/30">
+          <Button data-testid="btn-tts" onClick={putarSuara} variant="outline" className={`rounded-xl justify-start gap-2 border-primary/30 ${speaking ? "bg-secondary/20 border-secondary" : ""}`}>
             {speaking ? <Square className="w-4 h-4 text-primary" /> : <Volume2 className="w-4 h-4 text-primary" />}
-            {speaking ? "Hentikan Suara" : "Putar Suara Panduan"}
+            {speaking ? "Hentikan Narator" : "Putar Suara Narator"}
           </Button>
           <Button data-testid="btn-print" onClick={() => window.print()} variant="outline" className="rounded-xl justify-start gap-2 border-primary/30">
             <Printer className="w-4 h-4 text-primary" /> Cetak / Simpan PDF

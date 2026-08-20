@@ -4,13 +4,14 @@ import confetti from "canvas-confetti";
 import { toast } from "sonner";
 import {
   Menu, Settings, Calculator, Briefcase, Drama, History, Play,
-  Heart, KeyRound, Sparkles, TrendingUp, School, Users, X,
+  Heart, KeyRound, Sparkles, TrendingUp, School, Users, X, Trophy,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "./ui/sheet";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
+import { RaporModal } from "./RaporModal";
 
 const rupiah = (n) => "Rp" + Number(n || 0).toLocaleString("id-ID");
 
@@ -53,6 +54,7 @@ export const HeaderMenu = ({ onDemo, aiAktif, riwayat, onBukaRiwayat }) => {
     { key: "demo", icon: Play, label: "🎬 Demo Otomatis 60 Detik", warna: "text-secondary", aksi: () => { setOpenMenu(false); onDemo(); } },
     { key: "api", icon: Settings, label: "⚙️ Kunci API Gemini", aksi: () => bukaModal("api") },
     { key: "kalkulator", icon: Calculator, label: "📊 Kalkulator Penghematan Biaya Les", aksi: () => bukaModal("kalkulator") },
+    { key: "rapor", icon: Trophy, label: "🏅 Rapor Perkembangan Anak", warna: "text-primary", aksi: () => bukaModal("rapor") },
     { key: "bisnis", icon: Briefcase, label: "💼 Rencana Bisnis & Skalabilitas", aksi: () => bukaModal("bisnis") },
     { key: "simulasi", icon: Drama, label: "🎭 Simulasi: Marah Dulu vs Sabar Sekarang", aksi: () => bukaModal("simulasi") },
     { key: "riwayat", icon: History, label: "🕒 Riwayat Bimbingan Terakhir", aksi: () => bukaModal("riwayat") },
@@ -99,7 +101,7 @@ export const HeaderMenu = ({ onDemo, aiAktif, riwayat, onBukaRiwayat }) => {
                   <Menu className="w-5 h-5 text-primary" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[85%] max-w-sm bg-background overflow-y-auto">
+              <SheetContent side="right" aria-describedby={undefined} className="w-[85%] max-w-sm bg-background overflow-y-auto">
                 <SheetHeader>
                   <SheetTitle className="font-heading text-primary text-left">Menu Utilitas</SheetTitle>
                 </SheetHeader>
@@ -137,6 +139,7 @@ export const HeaderMenu = ({ onDemo, aiAktif, riwayat, onBukaRiwayat }) => {
         <DialogContent className="max-w-md rounded-3xl">
           <DialogHeader>
             <DialogTitle className="font-heading flex items-center gap-2"><KeyRound className="w-5 h-5 text-primary" /> Pengaturan Kunci API Gemini</DialogTitle>
+            <DialogDescription>Kelola kunci API Gemini pribadi Bunda (opsional).</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div className={`p-3 rounded-xl text-sm flex items-center gap-2 ${aiAktif ? "bg-primary/10 text-primary" : "bg-secondary/15 text-secondary-foreground"}`}>
@@ -164,6 +167,7 @@ export const HeaderMenu = ({ onDemo, aiAktif, riwayat, onBukaRiwayat }) => {
         <DialogContent className="max-w-md rounded-3xl">
           <DialogHeader>
             <DialogTitle className="font-heading flex items-center gap-2"><Calculator className="w-5 h-5 text-primary" /> Kalkulator Penghematan Biaya Les</DialogTitle>
+            <DialogDescription>Hitung berapa banyak biaya dan stres yang bisa Bunda hemat.</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div>
@@ -201,6 +205,7 @@ export const HeaderMenu = ({ onDemo, aiAktif, riwayat, onBukaRiwayat }) => {
         <DialogContent className="max-w-md rounded-3xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-heading flex items-center gap-2"><Briefcase className="w-5 h-5 text-primary" /> Rencana Bisnis & Skalabilitas</DialogTitle>
+            <DialogDescription>Strategi monetisasi B2C keluarga & kemitraan sekolah.</DialogDescription>
           </DialogHeader>
           <div className="space-y-3 text-sm">
             <div className="p-3 rounded-xl bg-primary/5">
@@ -228,6 +233,7 @@ export const HeaderMenu = ({ onDemo, aiAktif, riwayat, onBukaRiwayat }) => {
         <DialogContent className="max-w-md rounded-3xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-heading flex items-center gap-2"><Drama className="w-5 h-5 text-primary" /> Cara Marah Dulu vs Cara Sabar Sekarang</DialogTitle>
+            <DialogDescription>Perbandingan pendekatan lama vs pendampingan yang sabar.</DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-1 gap-3 text-sm">
             <div className="p-3 rounded-xl bg-rose-50 border border-rose-200">
@@ -251,11 +257,15 @@ export const HeaderMenu = ({ onDemo, aiAktif, riwayat, onBukaRiwayat }) => {
         </DialogContent>
       </Dialog>
 
+      {/* ===== MODAL: Rapor Perkembangan Anak ===== */}
+      <RaporModal open={modal === "rapor"} onOpenChange={(o) => !o && setModal(null)} riwayat={riwayat} />
+
       {/* ===== MODAL: Riwayat ===== */}
       <Dialog open={modal === "riwayat"} onOpenChange={(o) => !o && setModal(null)}>
         <DialogContent className="max-w-md rounded-3xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-heading flex items-center gap-2"><History className="w-5 h-5 text-primary" /> Riwayat Bimbingan Terakhir</DialogTitle>
+            <DialogDescription>Daftar bimbingan yang tersimpan di memori HP Bunda.</DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
             {(!riwayat || riwayat.length === 0) && (

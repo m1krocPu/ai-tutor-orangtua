@@ -1,0 +1,34 @@
+{
+  "summary": "Frontend-only testing (viewport 430x900) of the two NEW features: 'Rapor Perkembangan Anak' modal and 'Suara Narator' (segment narration + text highlighting), plus regression on Susun Panduan and the child-proof answer lock. All 4 test suites passed. Rapor: clicking 3 Pustaka topics (topik-a1/a2/a4) persisted 3 entries with ts/mapel/jenjang to localStorage 'riwayat_bimbingan'; rapor-modal opened from btn-menu -> menu-rapor and correctly showed Indonesian weekly narrative, rapor-minggu-ini=3, total=3, hari aktif 1/7, a 7-bar/7-tick recharts chart, rapor-mapel-Matematika = '2x 67%' + IPAS '1x 33%', and 3 unique topic chips. Edge cases verified: empty history narrative, >7-day-old-only history (minggu ini=0, total=1, correct nudge narrative), and persistence across page reload. Narrator: btn-tts label toggles 'Putar Suara Narator' -> 'Hentikan Narator'; with a patched SpeechSynthesis.prototype (headless has no speech engine) the section highlight advanced in the correct order konsep -> analogi -> skrip -> emosi, label reverted at end, manual stop mid-narration reverted label and cleared highlight. No JS crashes/pageerrors anywhere. Regression: Susun Panduan with manual text produced a Gemini-backed kartu-panduan (~ok latency), and lock-slider-knob double-click revealed kunci-jawaban-terbuka.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "BundaAyahCard / lib/api.js narasikan()", "issue": "Silent failure when device TTS engine is unavailable: every utterance fires error 'synthesis-failed' (verified in headless), narasikan() still returns true, so onEnd runs immediately and the button flips back to 'Putar Suara Narator' within ~40ms with NO toast/feedback. User sees a dead button. Suggest an onError callback (or check: if 0 segments completed / no id-ID voice, show the existing 'perangkat belum mendukung suara narator' toast).", "selector": "[data-testid=\"btn-tts\"]", "priority": "MEDIUM"},
+      {"component": "RaporModal", "issue": "Recharts console warning on open: 'The width(-1) and height(-1) of chart should be greater than 0' because ResponsiveContainer mounts before the dialog measures. Chart renders correctly afterwards; add minHeight/minWidth or render chart after dialog open animation.", "selector": "[data-testid=\"rapor-modal\"]", "priority": "LOW"},
+      {"component": "HeaderMenu dialogs / SheetContent", "issue": "Radix a11y warning: 'Missing Description or aria-describedby={undefined} for DialogContent' (api/kalkulator/bisnis/simulasi/riwayat modals + sheet). Add DialogDescription or aria-describedby={undefined}.", "selector": "[data-testid=\"btn-menu\"]", "priority": "LOW"}
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Rapor modal", "issues": ["Dialog close button screen-reader label is English 'Close' while the whole app is Bahasa Indonesia - change to 'Tutup' in ui/dialog.jsx sr-only text", "'FOKUS MATA PELAJARAN' block falls back to all-time data when there are no sessions this week, while the header implies weekly scope (semantic mismatch; consider a label like 'Fokus Mata Pelajaran (sepanjang waktu)' in the fallback case)"]}
+    ]
+  },
+  "test_report_links": ["/app/test_reports/iteration_2.json"],
+  "action_items": [
+    "Add error feedback in narasikan()/putarSuara when speech synthesis fails or no id-ID voice is available (currently silently no-ops)",
+    "Fix Recharts ResponsiveContainer -1 width/height warning in RaporModal",
+    "Add DialogDescription/aria-describedby to HeaderMenu dialogs and SheetContent to clear Radix a11y warnings",
+    "Localize dialog close sr-only label to 'Tutup'"
+  ],
+  "critical_code_review_comments": [
+    "RaporModal getTs falls back to Date.now() for entries lacking ts/valid waktu, which will incorrectly count legacy pre-existing localStorage entries as 'this week'. Prefer 0 (or exclude) as the fallback so old entries are not inflated into weekly stats.",
+    "narasikan() treats 'has speechSynthesis' as success; it should surface per-utterance onerror to the caller so the UI can inform the user."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "not tested (per request)", "frontend": "100% of requested flows passed (3 minor non-blocking issues found)"},
+  "seed_data_creation": "localStorage 'riwayat_bimbingan' entries created/cleared during tests (Pustaka topics a1/a2/a4 and a synthetic 20-day-old entry). No backend/DB data created.",
+  "should_call_test_agent_after_fix": false,
+  "should_main_agent_self_test": true,
+  "test_credentials": "none required (no login)",
+  "context_for_next_testing_agent": "Backend passed 7/7 in iteration_1; iteration_2 covered new Rapor + Narator features frontend-only and all requested flows passed. Headless Chromium exposes window.speechSynthesis but getVoices()=[] and every utterance errors 'synthesis-failed', so the narrator label reverts in ~40ms. To validate narration/highlighting, patch SpeechSynthesis.prototype.speak via add_init_script to call u.onend() after a delay (overwriting window.speechSynthesis itself does not work - it is read-only). Rapor testids: rapor-modal, rapor-minggu-ini, rapor-mapel-<Mapel>.",
+  "rca_of_the_issue": "Narrator 'no state toggle' observed in the first run was an environment limitation, not an app bug: with no TTS engine present each SpeechSynthesisUtterance immediately fires onerror, narasikan() advances all segments and calls onEnd, so setSpeaking(false) runs within milliseconds. Confirmed via instrumented speak() log ('speak' -> 'error:synthesis-failed' x6) and a 40ms poll that captured the transient 'Hentikan Narator' label. Product-level gap: this failure path gives the user no feedback."
+}

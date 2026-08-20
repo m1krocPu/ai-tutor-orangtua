@@ -7,6 +7,7 @@ import { toast } from "sonner";
 
 const toSoal = (t) => ({
   judul_singkat: t.judul,
+  img: t.img,
   konsep_kurikulum: t.konsep,
   analogi_dapur: t.analogi,
   skrip_sokratik: t.skrip,
@@ -57,9 +58,12 @@ export const TabPustaka = ({ onSimpanRiwayat }) => {
                       key={t.id}
                       data-testid={`topik-${t.id}`}
                       onClick={() => buka(t)}
-                      className="w-full text-left p-3 rounded-xl bg-muted hover:bg-primary/10 flex items-center gap-3 transition-transform duration-200 hover:-translate-y-0.5 active:scale-95"
+                      className="w-full text-left p-2.5 rounded-xl bg-muted hover:bg-primary/10 flex items-center gap-3 transition-transform duration-200 hover:-translate-y-0.5 active:scale-95"
                     >
-                      <span className="text-2xl shrink-0">{t.emoji}</span>
+                      <div className="relative w-14 h-14 rounded-lg overflow-hidden shrink-0 bg-primary/10">
+                        <img src={t.img} alt={t.judul} loading="lazy" className="w-full h-full object-cover" />
+                        <span className="absolute bottom-0 right-0 text-sm bg-white/85 rounded-tl-md px-0.5 leading-none">{t.emoji}</span>
+                      </div>
                       <div className="min-w-0">
                         <p className="font-semibold text-sm truncate">{t.judul}</p>
                         <p className="text-[11px] text-muted-foreground">{t.kelas} · {t.mapel}</p>

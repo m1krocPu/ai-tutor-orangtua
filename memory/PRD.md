@@ -29,12 +29,11 @@ Aplikasi web mobile-first "TutorOrangTua AI" (Tagline: "Co-Pilot Bimbing PR & Pa
 6. Bilah aksi: WhatsApp, Putar Suara (TTS), Cetak PDF, Upvote.
 
 ## Implemented (2026-06)
-- [x] Backend endpoints: `/api/status-ai`, `/api/bimbing` (foto+teks), `/api/curhat`, `/api/tanya-spontan` — verified 7/7 pytest.
-- [x] Gemini vision membaca foto soal → JSON panduan Bahasa Indonesia.
-- [x] Semua tab + kartu panduan + child-proof lock (geser & klik-2x) — verified 10/10 flows.
-- [x] Demo overlay otomatis, semua modal header, kalkulator + confetti, upvote.
-- [x] Galeri 6 foto soal AI-generated, kompresi kanvas 1280px JPEG.
-- [x] Pustaka topik per fase (offline-ready), Curhat chat AI.
+- [x] Backend endpoints + Gemini vision (verified 7/7 pytest).
+- [x] Semua tab + kartu panduan + child-proof lock — verified.
+- [x] Demo overlay, modal header, kalkulator, upvote, galeri 6 foto AI.
+- [x] Rapor Perkembangan Anak + Suara Narator dengan sorotan teks — verified 10/10.
+- [x] Update lanjutan (2026-06): hapus menu "Kunci API Gemini" & teks status AI; tambah "Gambar Kutipan WA" (canvas → preview → simpan/bagikan); Pustaka diperluas jadi 52 topik (A:12 B:14 C:14 D:12) dengan foto ilustrasi tiap topik; Rapor kini punya Rentetan Hari (streak) + Lencana Konsistensi (6 badge). Semua verified 5/5 testing agent. Jenjang Kelas pakai shadcn Select.
 
 ## Backlog / Next (P1/P2)
 - P1: Rapor perkembangan anak (tracking topik yang sudah dibimbing).

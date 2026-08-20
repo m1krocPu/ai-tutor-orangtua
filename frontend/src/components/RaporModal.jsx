@@ -6,6 +6,15 @@ import { TrendingUp, CalendarDays, BookMarked, Star, Sparkles, Trophy } from "lu
 const HARI = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
 const MAPEL_WARNA = { Matematika: "#0F766E", IPAS: "#F59E0B", Bahasa: "#0EA5E9" };
 
+const LENCANA = [
+  { emoji: "🌱", nama: "Pemula", ket: "Sesi pertama", syarat: (s) => s.total >= 1 },
+  { emoji: "📚", nama: "Rajin", ket: "5 bimbingan", syarat: (s) => s.total >= 5 },
+  { emoji: "🔥", nama: "Konsisten", ket: "3 hari beruntun", syarat: (s) => s.streak >= 3 },
+  { emoji: "⭐", nama: "Bintang", ket: "10 bimbingan", syarat: (s) => s.total >= 10 },
+  { emoji: "🏆", nama: "Juara", ket: "7 hari beruntun", syarat: (s) => s.streak >= 7 },
+  { emoji: "💎", nama: "Legenda", ket: "25 bimbingan", syarat: (s) => s.total >= 25 },
+];
+
 const getTs = (r) => r.ts || (r.waktu ? Date.parse(r.waktu) : 0) || 0;
 
 export const RaporModal = ({ open, onOpenChange, riwayat = [] }) => {
@@ -38,6 +47,17 @@ export const RaporModal = ({ open, onOpenChange, riwayat = [] }) => {
     const topikUnik = [...new Set(mingguIni.map((r) => r.judul))];
     const topMapel = mapelArr[0]?.nama;
 
+    // Rentetan hari (streak)
+    const fmt = (d) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+    const hariSet = new Set(riwayat.filter((r) => getTs(r) > 0).map((r) => fmt(new Date(getTs(r)))));
+    let streak = 0;
+    const cursor = new Date(now);
+    if (!hariSet.has(fmt(cursor))) cursor.setDate(cursor.getDate() - 1); // beri toleransi jika hari ini belum belajar
+    while (hariSet.has(fmt(cursor))) {
+      streak += 1;
+      cursor.setDate(cursor.getDate() - 1);
+    }
+
     return {
       total: riwayat.length,
       mingguIni: mingguIni.length,
@@ -46,6 +66,7 @@ export const RaporModal = ({ open, onOpenChange, riwayat = [] }) => {
       pakaiSemua,
       topikUnik,
       topMapel,
+      streak,
       hariAktif: perHari.filter((h) => h.jumlah > 0).length,
     };
   }, [riwayat]);
@@ -74,6 +95,42 @@ export const RaporModal = ({ open, onOpenChange, riwayat = [] }) => {
           {/* Kartu narasi */}
           <div className="p-4 rounded-2xl bg-primary text-primary-foreground">
             <p className="text-sm leading-relaxed">{narasi()}</p>
+          </div>
+
+          {/* Rentetan Hari (Streak) */}
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-secondary/20 to-secondary/5 border border-secondary/30 flex items-center gap-3" data-testid="rapor-streak">
+            <div className="text-4xl">🔥</div>
+            <div className="flex-1">
+              <p className="font-heading font-extrabold text-2xl text-primary leading-none">{stat.streak} hari</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Rentetan mendampingi beruntun</p>
+            </div>
+            <div className="text-right">
+              <p className="text-[11px] text-muted-foreground">
+                {stat.streak === 0 ? "Ayo mulai hari ini!" : stat.streak < 3 ? "Terus lanjutkan ya!" : "Luar biasa, Bunda! 🌟"}
+              </p>
+            </div>
+          </div>
+
+          {/* Lencana Konsistensi */}
+          <div className="p-4 rounded-2xl bg-card border border-border" data-testid="rapor-lencana">
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-3">🏅 Lencana Konsistensi</p>
+            <div className="grid grid-cols-3 gap-2">
+              {LENCANA.map((b) => {
+                const buka = b.syarat(stat);
+                return (
+                  <div
+                    key={b.nama}
+                    data-testid={`lencana-${b.nama}`}
+                    data-unlocked={buka}
+                    className={`rounded-2xl p-2.5 text-center border transition-all ${buka ? "bg-secondary/15 border-secondary/40" : "bg-muted border-border opacity-50 grayscale"}`}
+                  >
+                    <div className="text-2xl mb-1">{buka ? b.emoji : "🔒"}</div>
+                    <p className="text-[11px] font-bold leading-tight">{b.nama}</p>
+                    <p className="text-[9px] text-muted-foreground leading-tight">{b.ket}</p>
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           {/* Ringkasan angka */}

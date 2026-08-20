@@ -3,8 +3,8 @@ import Marquee from "react-fast-marquee";
 import confetti from "canvas-confetti";
 import { toast } from "sonner";
 import {
-  Menu, Settings, Calculator, Briefcase, Drama, History, Play,
-  Heart, KeyRound, Sparkles, TrendingUp, School, Users, X, Trophy,
+  Menu, Calculator, Briefcase, Drama, History, Play,
+  Heart, TrendingUp, School, Users, X, Trophy,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "./ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
@@ -15,24 +15,15 @@ import { RaporModal } from "./RaporModal";
 
 const rupiah = (n) => "Rp" + Number(n || 0).toLocaleString("id-ID");
 
-export const HeaderMenu = ({ onDemo, aiAktif, riwayat, onBukaRiwayat }) => {
+export const HeaderMenu = ({ onDemo, riwayat, onBukaRiwayat }) => {
   const [openMenu, setOpenMenu] = useState(false);
-  const [modal, setModal] = useState(null); // 'api' | 'kalkulator' | 'bisnis' | 'simulasi' | 'riwayat'
-  const [apiKey, setApiKey] = useState("");
+  const [modal, setModal] = useState(null); // 'kalkulator' | 'bisnis' | 'simulasi' | 'riwayat' | 'rapor'
   const [biayaLes, setBiayaLes] = useState(500000);
   const [upvotes, setUpvotes] = useState(1284);
 
   useEffect(() => {
-    setApiKey(localStorage.getItem("gemini_api_key") || "");
     setUpvotes(Number(localStorage.getItem("lomba_upvotes") || 1284));
   }, []);
-
-  const simpanApiKey = () => {
-    const bersih = apiKey.trim();
-    localStorage.setItem("gemini_api_key", bersih);
-    toast.success("Kunci API tersimpan di memori HP, Bun! 🔐");
-    setModal(null);
-  };
 
   const beriUpvote = () => {
     const baru = upvotes + 1;
@@ -52,7 +43,6 @@ export const HeaderMenu = ({ onDemo, aiAktif, riwayat, onBukaRiwayat }) => {
 
   const menuItems = [
     { key: "demo", icon: Play, label: "🎬 Demo Otomatis 60 Detik", warna: "text-secondary", aksi: () => { setOpenMenu(false); onDemo(); } },
-    { key: "api", icon: Settings, label: "⚙️ Kunci API Gemini", aksi: () => bukaModal("api") },
     { key: "kalkulator", icon: Calculator, label: "📊 Kalkulator Penghematan Biaya Les", aksi: () => bukaModal("kalkulator") },
     { key: "rapor", icon: Trophy, label: "🏅 Rapor Perkembangan Anak", warna: "text-primary", aksi: () => bukaModal("rapor") },
     { key: "bisnis", icon: Briefcase, label: "💼 Rencana Bisnis & Skalabilitas", aksi: () => bukaModal("bisnis") },
@@ -118,10 +108,6 @@ export const HeaderMenu = ({ onDemo, aiAktif, riwayat, onBukaRiwayat }) => {
                     </button>
                   ))}
                 </div>
-                <div className="mt-6 p-3 rounded-xl bg-primary/5 text-xs text-muted-foreground flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-primary shrink-0" />
-                  {aiAktif ? "AI Gemini aktif & siap membaca foto soal." : "Mode Cadangan aktif — memakai 50+ topik contoh."}
-                </div>
               </SheetContent>
             </Sheet>
           </div>
@@ -133,34 +119,6 @@ export const HeaderMenu = ({ onDemo, aiAktif, riwayat, onBukaRiwayat }) => {
           ))}
         </div>
       </header>
-
-      {/* ===== MODAL: Kunci API Gemini ===== */}
-      <Dialog open={modal === "api"} onOpenChange={(o) => !o && setModal(null)}>
-        <DialogContent className="max-w-md rounded-3xl">
-          <DialogHeader>
-            <DialogTitle className="font-heading flex items-center gap-2"><KeyRound className="w-5 h-5 text-primary" /> Pengaturan Kunci API Gemini</DialogTitle>
-            <DialogDescription>Kelola kunci API Gemini pribadi Bunda (opsional).</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-3">
-            <div className={`p-3 rounded-xl text-sm flex items-center gap-2 ${aiAktif ? "bg-primary/10 text-primary" : "bg-secondary/15 text-secondary-foreground"}`}>
-              <Sparkles className="w-4 h-4" />
-              {aiAktif ? "AI Gemini sudah AKTIF (kunci bawaan). Bunda bisa langsung memakai semua fitur!" : "AI belum aktif — aplikasi memakai Mode Cadangan Cerdas."}
-            </div>
-            <div>
-              <Label className="text-xs">Kunci API Gemini Pribadi (opsional)</Label>
-              <Input
-                data-testid="input-api-key"
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                placeholder="Tempel kunci di sini (spasi otomatis dirapikan)"
-                className="mt-1 rounded-xl"
-              />
-              <p className="text-[11px] text-muted-foreground mt-1">Tersimpan aman di memori HP Bunda. Kosongkan untuk memakai kunci bawaan.</p>
-            </div>
-            <Button data-testid="btn-simpan-api" onClick={simpanApiKey} className="w-full rounded-xl">Simpan Kunci</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* ===== MODAL: Kalkulator Penghematan ===== */}
       <Dialog open={modal === "kalkulator"} onOpenChange={(o) => !o && setModal(null)}>

@@ -3,10 +3,12 @@ import { motion } from "framer-motion";
 import {
   Target, Lightbulb, MessageSquareText, HeartHandshake, KeyRound,
   Volume2, Square, Printer, Share2, Heart, Sparkles, HelpCircle, Send,
+  ImageDown, Download, X,
 } from "lucide-react";
 import { ChildProofLock } from "./ChildProofLock";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
 import { mintaSpontan, narasikan, stopBicara } from "../lib/api";
 import { toast } from "sonner";
 
@@ -36,6 +38,8 @@ export const BundaAyahCard = ({ soal, panggilan = "Bunda", onUpvote }) => {
   const [loadingSpontan, setLoadingSpontan] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [segAktif, setSegAktif] = useState(null);
+  const [kutipanUrl, setKutipanUrl] = useState(null);
+  const [membuatKutipan, setMembuatKutipan] = useState(false);
 
   if (!soal) return null;
 
@@ -88,6 +92,118 @@ export const BundaAyahCard = ({ soal, panggilan = "Bunda", onUpvote }) => {
     window.open(`https://wa.me/?text=${encodeURIComponent(pesan)}`, "_blank");
   };
 
+  // Buat gambar kutipan cantik untuk Status WhatsApp (canvas)
+  const bungkusTeks = (ctx, teks, x, y, maxW, lineH) => {
+    const kata = teks.split(" ");
+    let baris = "";
+    let yy = y;
+    for (let n = 0; n < kata.length; n++) {
+      const tes = baris + kata[n] + " ";
+      if (ctx.measureText(tes).width > maxW && n > 0) {
+        ctx.fillText(baris.trim(), x, yy);
+        baris = kata[n] + " ";
+        yy += lineH;
+      } else baris = tes;
+    }
+    ctx.fillText(baris.trim(), x, yy);
+    return yy + lineH;
+  };
+
+  const buatKutipan = async () => {
+    setMembuatKutipan(true);
+    try {
+      const W = 1080, H = 1920;
+      const c = document.createElement("canvas");
+      c.width = W; c.height = H;
+      const ctx = c.getContext("2d");
+      // Latar zamrud
+      ctx.fillStyle = "#0F766E"; ctx.fillRect(0, 0, W, H);
+      // Ornamen lingkaran
+      ctx.fillStyle = "rgba(245,158,11,0.18)";
+      ctx.beginPath(); ctx.arc(W - 60, 180, 260, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "rgba(255,251,235,0.10)";
+      ctx.beginPath(); ctx.arc(120, H - 160, 300, 0, Math.PI * 2); ctx.fill();
+      // Header brand
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#FFFBEB";
+      ctx.font = "bold 52px Manrope, sans-serif";
+      ctx.fillText("👨‍👩‍👧‍👦 TutorOrangTua AI 🇮🇩", W / 2, 200);
+      ctx.fillStyle = "#F59E0B";
+      ctx.font = "600 34px 'DM Sans', sans-serif";
+      ctx.fillText("Bimbing PR ala Kurikulum Merdeka", W / 2, 260);
+      // Kartu krem
+      const cardX = 90, cardY = 360, cardW = W - 180, cardH = 1180, r = 48;
+      ctx.fillStyle = "#FFFBEB";
+      ctx.beginPath();
+      ctx.moveTo(cardX + r, cardY);
+      ctx.arcTo(cardX + cardW, cardY, cardX + cardW, cardY + cardH, r);
+      ctx.arcTo(cardX + cardW, cardY + cardH, cardX, cardY + cardH, r);
+      ctx.arcTo(cardX, cardY + cardH, cardX, cardY, r);
+      ctx.arcTo(cardX, cardY, cardX + cardW, cardY, r);
+      ctx.closePath(); ctx.fill();
+      // Emoji + Judul
+      ctx.textAlign = "center";
+      ctx.font = "120px sans-serif";
+      ctx.fillText(soal.judul_emoji || "💡", W / 2, cardY + 170);
+      ctx.fillStyle = "#0F766E";
+      ctx.font = "bold 56px Manrope, sans-serif";
+      let yy = bungkusTeks(ctx, soal.judul_singkat, W / 2, cardY + 280, cardW - 160, 66);
+      // Label analogi
+      ctx.fillStyle = "#F59E0B";
+      ctx.font = "bold 30px 'DM Sans', sans-serif";
+      ctx.fillText("💡 ANALOGI HANGAT DI RUMAH", W / 2, yy + 40);
+      // Isi analogi
+      ctx.fillStyle = "#134E4A";
+      ctx.font = "40px 'DM Sans', sans-serif";
+      yy = bungkusTeks(ctx, `"${soal.analogi_dapur}"`, W / 2, yy + 110, cardW - 140, 56);
+      // Garis
+      ctx.strokeStyle = "rgba(15,118,110,0.2)"; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(cardX + 120, yy + 30); ctx.lineTo(cardX + cardW - 120, yy + 30); ctx.stroke();
+      // Ajakan sokratik
+      ctx.fillStyle = "#0F766E";
+      ctx.font = "italic 36px 'DM Sans', sans-serif";
+      const langkah1 = soal.skrip_sokratik?.[0]?.tanya_anak || "";
+      bungkusTeks(ctx, `🗣️ "${langkah1}"`, W / 2, yy + 100, cardW - 140, 52);
+      // Footer
+      ctx.fillStyle = "#FFFBEB";
+      ctx.font = "600 32px 'DM Sans', sans-serif";
+      ctx.fillText("🔒 100% Anti-Contekan · Belajar Sambil Menyayangi", W / 2, cardY + cardH + 90);
+      ctx.fillStyle = "#F59E0B";
+      ctx.font = "bold 30px 'DM Sans', sans-serif";
+      ctx.fillText("Buat panduanmu sendiri di TutorOrangTua AI", W / 2, cardY + cardH + 145);
+
+      const url = c.toDataURL("image/png");
+      setKutipanUrl(url);
+    } catch (e) {
+      toast.error("Maaf Bun, gagal membuat gambar. Coba lagi ya.");
+    } finally {
+      setMembuatKutipan(false);
+    }
+  };
+
+  const unduhKutipan = () => {
+    const a = document.createElement("a");
+    a.href = kutipanUrl;
+    a.download = `Panduan-${soal.judul_singkat.replace(/\s+/g, "-")}.png`;
+    a.click();
+    toast.success("Gambar tersimpan! Siap diunggah ke Status WA. 📲");
+  };
+
+  const bagikanKutipan = async () => {
+    try {
+      const blob = await (await fetch(kutipanUrl)).blob();
+      const file = new File([blob], "panduan.png", { type: "image/png" });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: "TutorOrangTua AI", text: soal.judul_singkat });
+      } else {
+        unduhKutipan();
+        window.open("https://wa.me/", "_blank");
+      }
+    } catch {
+      unduhKutipan();
+    }
+  };
+
   const tanyaSpontan = async () => {
     if (!spontanQ.trim()) return;
     setLoadingSpontan(true);
@@ -116,6 +232,10 @@ export const BundaAyahCard = ({ soal, panggilan = "Bunda", onUpvote }) => {
           Kartu Panduan {panggilan} · {soal.judul_singkat}
         </p>
       </div>
+
+      {soal.img && (
+        <img src={soal.img} alt={soal.judul_singkat} loading="lazy" className="w-full h-40 object-cover" />
+      )}
 
       <div className="p-4 space-y-3">
         <Section icon={Target} judul="Maksud & Konsep Kurikulum Merdeka" tint="bg-primary/5" testid="seksi-konsep" active={segAktif === "konsep"}>
@@ -209,11 +329,33 @@ export const BundaAyahCard = ({ soal, panggilan = "Bunda", onUpvote }) => {
           <Button data-testid="btn-print" onClick={() => window.print()} variant="outline" className="rounded-xl justify-start gap-2 border-primary/30">
             <Printer className="w-4 h-4 text-primary" /> Cetak / Simpan PDF
           </Button>
-          <Button data-testid="btn-upvote-card" onClick={onUpvote} className="rounded-xl justify-start gap-2 bg-secondary text-secondary-foreground hover:bg-secondary/90">
-            <Heart className="w-4 h-4" /> Suka Panduan Ini
+          <Button data-testid="btn-kutipan" onClick={buatKutipan} disabled={membuatKutipan} variant="outline" className="rounded-xl justify-start gap-2 border-primary/30">
+            <ImageDown className="w-4 h-4 text-primary" /> {membuatKutipan ? "Membuat..." : "Gambar Kutipan WA"}
+          </Button>
+          <Button data-testid="btn-upvote-card" onClick={onUpvote} className="col-span-2 rounded-xl justify-center gap-2 bg-secondary text-secondary-foreground hover:bg-secondary/90">
+            <Heart className="w-4 h-4" /> Suka Panduan Ini? Beri Upvote Lomba
           </Button>
         </div>
       </div>
+
+      {/* Preview Gambar Kutipan */}
+      <Dialog open={!!kutipanUrl} onOpenChange={(o) => !o && setKutipanUrl(null)}>
+        <DialogContent className="max-w-sm rounded-3xl" data-testid="kutipan-modal">
+          <DialogHeader>
+            <DialogTitle className="font-heading flex items-center gap-2"><ImageDown className="w-5 h-5 text-primary" /> Gambar Kutipan untuk Status WA</DialogTitle>
+            <DialogDescription>Simpan lalu unggah ke Status WhatsApp Bunda ya. 💚</DialogDescription>
+          </DialogHeader>
+          {kutipanUrl && <img src={kutipanUrl} alt="Kutipan panduan" className="w-full rounded-2xl border border-border" />}
+          <div className="grid grid-cols-2 gap-2 pt-1">
+            <Button data-testid="btn-unduh-kutipan" onClick={unduhKutipan} variant="outline" className="rounded-xl gap-2 border-primary/30">
+              <Download className="w-4 h-4 text-primary" /> Simpan Gambar
+            </Button>
+            <Button data-testid="btn-bagikan-kutipan" onClick={bagikanKutipan} className="rounded-xl gap-2 bg-secondary text-secondary-foreground hover:bg-secondary/90">
+              <Share2 className="w-4 h-4" /> Bagikan
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 };

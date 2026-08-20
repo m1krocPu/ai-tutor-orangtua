@@ -7,6 +7,7 @@ import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { BundaAyahCard } from "./BundaAyahCard";
 import { compressImageFile, urlToCompressedDataURL, mintaBimbingan } from "../lib/api";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { toast } from "sonner";
 
 const GALERI_CONTOH = [
@@ -253,9 +254,14 @@ export const TabFoto = ({ onSimpanRiwayat, initialHasil, panggilanDefault = "Bun
         <div><p className="text-xs font-semibold text-muted-foreground mb-1.5">Mata Pelajaran</p><Pilih testid="pilih-mapel" items={MAPEL} value={mapel} onChange={setMapel} /></div>
         <div>
           <p className="text-xs font-semibold text-muted-foreground mb-1.5">Jenjang Kelas</p>
-          <select data-testid="pilih-jenjang" value={jenjang} onChange={(e) => setJenjang(e.target.value)} className="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm">
-            {JENJANG.map((j) => <option key={j} value={j}>{j}</option>)}
-          </select>
+          <Select value={jenjang} onValueChange={setJenjang}>
+            <SelectTrigger data-testid="pilih-jenjang" className="w-full rounded-xl bg-white">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {JENJANG.map((j) => <SelectItem key={j} value={j}>{j}</SelectItem>)}
+            </SelectContent>
+          </Select>
         </div>
         <div><p className="text-xs font-semibold text-muted-foreground mb-1.5">Panggilan Orang Tua</p><Pilih testid="pilih-panggilan" items={["Bunda", "Ayah"]} value={panggilan} onChange={setPanggilan} /></div>
         <div><p className="text-xs font-semibold text-muted-foreground mb-1.5">Gaya Belajar Anak</p><Pilih testid="pilih-gaya" items={GAYA} value={gaya} onChange={setGaya} /></div>

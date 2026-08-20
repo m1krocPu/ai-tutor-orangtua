@@ -10,7 +10,9 @@ import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
 import { mintaSpontan, narasikan, stopBicara } from "../lib/api";
+import { SHOWCASE_URL } from "./HeaderMenu";
 import { toast } from "sonner";
+import confetti from "canvas-confetti";
 
 const Section = ({ icon: Icon, judul, tint, children, testid, active }) => (
   <div
@@ -332,8 +334,16 @@ export const BundaAyahCard = ({ soal, panggilan = "Bunda", onUpvote }) => {
           <Button data-testid="btn-kutipan" onClick={buatKutipan} disabled={membuatKutipan} variant="outline" className="rounded-xl justify-start gap-2 border-primary/30">
             <ImageDown className="w-4 h-4 text-primary" /> {membuatKutipan ? "Membuat..." : "Gambar Kutipan WA"}
           </Button>
-          <Button data-testid="btn-upvote-card" onClick={onUpvote} className="col-span-2 rounded-xl justify-center gap-2 bg-secondary text-secondary-foreground hover:bg-secondary/90">
-            <Heart className="w-4 h-4" /> Suka Panduan Ini? Beri Upvote Lomba
+          <Button
+            data-testid="btn-upvote-card"
+            onClick={() => {
+              confetti({ particleCount: 90, spread: 70, origin: { y: 0.5 }, colors: ["#0F766E", "#F59E0B", "#FFFBEB"] });
+              window.open(SHOWCASE_URL, "_blank");
+              onUpvote && onUpvote();
+            }}
+            className="col-span-2 rounded-xl justify-center gap-2 bg-secondary text-secondary-foreground hover:bg-secondary/90"
+          >
+            <Heart className="w-4 h-4 fill-current" /> Suka Panduan Ini? Beri Upvote Resmi di Emergent 🚀
           </Button>
         </div>
       </div>

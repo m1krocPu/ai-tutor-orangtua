@@ -14,10 +14,11 @@ import { Label } from "./ui/label";
 import { RaporModal } from "./RaporModal";
 
 const rupiah = (n) => "Rp" + Number(n || 0).toLocaleString("id-ID");
+export const SHOWCASE_URL = "https://app.emergent.sh/showcase/building-indonesia/2076ae76-6647-4b0e-9b45-558e5234aefd";
 
 export const HeaderMenu = ({ onDemo, riwayat, onBukaRiwayat }) => {
   const [openMenu, setOpenMenu] = useState(false);
-  const [modal, setModal] = useState(null); // 'kalkulator' | 'bisnis' | 'simulasi' | 'riwayat' | 'rapor'
+  const [modal, setModal] = useState(null); // 'kalkulator' | 'bisnis' | 'simulasi' | 'riwayat' | 'rapor' | 'upvote'
   const [biayaLes, setBiayaLes] = useState(500000);
   const [upvotes, setUpvotes] = useState(1284);
 
@@ -29,8 +30,23 @@ export const HeaderMenu = ({ onDemo, riwayat, onBukaRiwayat }) => {
     const baru = upvotes + 1;
     setUpvotes(baru);
     localStorage.setItem("lomba_upvotes", String(baru));
-    confetti({ particleCount: 90, spread: 70, origin: { y: 0.3 }, colors: ["#0F766E", "#F59E0B", "#FFFBEB"] });
-    toast.success("Terima kasih atas dukungannya untuk inovasi keluarga Indonesia! ❤️");
+    confetti({ particleCount: 110, spread: 80, origin: { y: 0.3 }, colors: ["#0F766E", "#F59E0B", "#FFFBEB"] });
+    setModal("upvote");
+  };
+
+  const salinLinkLomba = () => {
+    navigator.clipboard.writeText(SHOWCASE_URL);
+    toast.success("Tautan lomba resmi berhasil disalin! 📋");
+  };
+
+  const bagikanVoteWA = () => {
+    const pesan =
+      `*Dukung Inovasi Pendidikan Keluarga Indonesia!* 🇮🇩\n\n` +
+      `Saya sedang mengikuti kompetisi *Emergent Building Indonesia 2026* dengan aplikasi *TutorOrangTua AI* — Co-Pilot bimbing PR anak tanpa stres & anti-contekan.\n\n` +
+      `Mohon luangkan waktu 10 detik untuk memberikan dukungan / Upvote resmi di tautan berikut ya:\n` +
+      `👉 ${SHOWCASE_URL}\n\n` +
+      `Dukungan Ayah & Bunda sangat berarti untuk kemajuan anak bangsa! Terima kasih banyak 🙏`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(pesan)}`, "_blank");
   };
 
   const hitungHemat = () => {
@@ -42,6 +58,7 @@ export const HeaderMenu = ({ onDemo, riwayat, onBukaRiwayat }) => {
   const jamStres = Math.round((biayaLes / 500000) * 96);
 
   const menuItems = [
+    { key: "upvote", icon: Heart, label: "🌟 Dukung / Upvote di Emergent", warna: "text-secondary font-bold", aksi: () => bukaModal("upvote") },
     { key: "demo", icon: Play, label: "🎬 Demo Otomatis 60 Detik", warna: "text-secondary", aksi: () => { setOpenMenu(false); onDemo(); } },
     { key: "kalkulator", icon: Calculator, label: "📊 Kalkulator Penghematan Biaya Les", aksi: () => bukaModal("kalkulator") },
     { key: "rapor", icon: Trophy, label: "🏅 Rapor Perkembangan Anak", warna: "text-primary", aksi: () => bukaModal("rapor") },
@@ -56,7 +73,7 @@ export const HeaderMenu = ({ onDemo, riwayat, onBukaRiwayat }) => {
       <div className="bg-primary text-primary-foreground text-xs py-1.5 flex items-center gap-2 px-2">
         <Marquee gradient={false} speed={40} className="overflow-hidden">
           <span className="mx-4">🏆 Kontestan Emergent Building Indonesia 2026! Dukung Inovasi Pendidikan Keluarga</span>
-          <span className="mx-4">👨‍👩‍👧‍👦 TutorOrangTua AI — Co-Pilot Bimbing PR & Parenting Kurikulum Merdeka</span>
+          <span className="mx-4">👨‍👩‍👧‍👦 TutorOrangTua AI — Co-Pilot Bimbing PR & Parenting Tanpa Drama</span>
         </Marquee>
         <button
           data-testid="btn-upvote-banner"
@@ -243,6 +260,61 @@ export const HeaderMenu = ({ onDemo, riwayat, onBukaRiwayat }) => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* ===== MODAL: Dukungan & Upvote Lomba ===== */}
+      <Dialog open={modal === "upvote"} onOpenChange={(o) => !o && setModal(null)}>
+        <DialogContent className="max-w-md rounded-3xl" data-testid="upvote-modal">
+          <DialogHeader>
+            <DialogTitle className="font-heading flex items-center gap-2 text-primary">
+              <Heart className="w-5 h-5 text-secondary fill-secondary" /> Dukung TutorOrangTua AI!
+            </DialogTitle>
+            <DialogDescription>
+              Aplikasi ini sedang berlaga di kompetisi <strong>Emergent Building Indonesia 2026</strong>. Dukungan Ayah & Bunda sangat berharga untuk kemajuan pendidikan anak bangsa.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 pt-2">
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/15 to-secondary/15 border border-primary/20 text-center">
+              <p className="text-3xl mb-1">🌟</p>
+              <p className="font-heading font-extrabold text-lg text-primary">Bantu Vote di Halaman Resmi</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Klik tombol di bawah untuk membuka halaman showcase resmi Emergent dan berikan Upvote Anda.
+              </p>
+            </div>
+
+            <Button
+              data-testid="btn-buka-showcase"
+              onClick={() => window.open(SHOWCASE_URL, "_blank")}
+              className="w-full rounded-2xl h-12 text-sm font-heading font-bold gap-2 bg-secondary text-secondary-foreground hover:bg-secondary/90 shadow-md"
+            >
+              <Heart className="w-4 h-4 fill-current" /> 🚀 Buka & Beri Upvote di Emergent
+            </Button>
+
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                data-testid="btn-share-wa-vote"
+                onClick={bagikanVoteWA}
+                variant="outline"
+                className="rounded-xl text-xs gap-1.5 border-primary/30"
+              >
+                📲 Ajak Teman di WA
+              </Button>
+              <Button
+                data-testid="btn-copy-link-vote"
+                onClick={salinLinkLomba}
+                variant="outline"
+                className="rounded-xl text-xs gap-1.5 border-primary/30"
+              >
+                📋 Salin Tautan
+              </Button>
+            </div>
+
+            <p className="text-[11px] text-center text-muted-foreground">
+              Terima kasih banyak atas setiap dukungan dan doa yang diberikan! 💚
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
+

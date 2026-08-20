@@ -1,7 +1,7 @@
 import axios from "axios";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-export const API = `${BACKEND_URL}/api`;
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
+export const API = BACKEND_URL ? `${BACKEND_URL}/api` : "/api";
 
 // Kompresi gambar via canvas: maks 1280px, JPEG
 export function compressImageFile(file, maxSize = 1280, quality = 0.8) {

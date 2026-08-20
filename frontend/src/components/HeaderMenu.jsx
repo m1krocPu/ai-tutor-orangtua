@@ -20,16 +20,8 @@ export const HeaderMenu = ({ onDemo, riwayat, onBukaRiwayat }) => {
   const [openMenu, setOpenMenu] = useState(false);
   const [modal, setModal] = useState(null); // 'kalkulator' | 'bisnis' | 'simulasi' | 'riwayat' | 'rapor' | 'upvote'
   const [biayaLes, setBiayaLes] = useState(500000);
-  const [upvotes, setUpvotes] = useState(1284);
-
-  useEffect(() => {
-    setUpvotes(Number(localStorage.getItem("lomba_upvotes") || 1284));
-  }, []);
 
   const beriUpvote = () => {
-    const baru = upvotes + 1;
-    setUpvotes(baru);
-    localStorage.setItem("lomba_upvotes", String(baru));
     confetti({ particleCount: 110, spread: 80, origin: { y: 0.3 }, colors: ["#0F766E", "#F59E0B", "#FFFBEB"] });
     setModal("upvote");
   };
@@ -78,9 +70,9 @@ export const HeaderMenu = ({ onDemo, riwayat, onBukaRiwayat }) => {
         <button
           data-testid="btn-upvote-banner"
           onClick={beriUpvote}
-          className="shrink-0 flex items-center gap-1 bg-secondary text-secondary-foreground rounded-full px-2.5 py-1 font-bold hover:-translate-y-0.5 active:scale-95 transition-transform duration-200"
+          className="shrink-0 flex items-center gap-1.5 bg-secondary text-secondary-foreground rounded-full px-3 py-1 font-bold text-xs hover:-translate-y-0.5 active:scale-95 transition-transform duration-200 shadow-sm"
         >
-          <Heart className="w-3 h-3 fill-current" /> Upvote ({upvotes})
+          <Heart className="w-3.5 h-3.5 fill-current" /> Beri Upvote Resmi
         </button>
       </div>
 

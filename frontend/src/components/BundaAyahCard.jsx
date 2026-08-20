@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Target, Lightbulb, MessageSquareText, HeartHandshake, KeyRound,
@@ -42,6 +42,12 @@ export const BundaAyahCard = ({ soal, panggilan = "Bunda", onUpvote }) => {
   const [segAktif, setSegAktif] = useState(null);
   const [kutipanUrl, setKutipanUrl] = useState(null);
   const [membuatKutipan, setMembuatKutipan] = useState(false);
+
+  useEffect(() => {
+    return () => {
+      stopBicara();
+    };
+  }, []);
 
   if (!soal) return null;
 

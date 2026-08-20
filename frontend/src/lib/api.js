@@ -107,20 +107,36 @@ export function pilihSuaraID() {
   );
 }
 
+let cancelCurrentNarasi = null;
+
 // Narasikan panduan segmen-demi-segmen dengan sorotan teks + suara ramah
 export function narasikan(segments, onSegStart, onEnd, onError) {
   if (!("speechSynthesis" in window)) {
     onError && onError();
     return false;
   }
-  window.speechSynthesis.cancel();
+
+  // Hentikan narasi yang sedang berjalan sebelumnya
+  stopBicara();
+
+  let dibatalkan = false;
+  cancelCurrentNarasi = () => {
+    dibatalkan = true;
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
+  };
+
   const voice = pilihSuaraID();
   let i = 0;
   let adaSukses = false;
+
   const next = () => {
+    if (dibatalkan) return;
     if (i >= segments.length) {
       if (!adaSukses && onError) onError();
       else onEnd && onEnd();
+      cancelCurrentNarasi = null;
       return;
     }
     const seg = segments[i];
@@ -130,13 +146,29 @@ export function narasikan(segments, onSegStart, onEnd, onError) {
     u.pitch = 1.12;
     u.volume = 1;
     if (voice) u.voice = voice;
-    u.onstart = () => { adaSukses = true; onSegStart && onSegStart(seg.id, i); };
-    u.onend = () => { i += 1; next(); };
-    u.onerror = () => { i += 1; next(); };
-    // sorot segmen segera (fallback bila onstart tak terpanggil)
+
+    u.onstart = () => {
+      if (dibatalkan) return;
+      adaSukses = true;
+      onSegStart && onSegStart(seg.id, i);
+    };
+
+    u.onend = () => {
+      if (dibatalkan) return;
+      i += 1;
+      next();
+    };
+
+    u.onerror = (ev) => {
+      if (dibatalkan || ev.error === "canceled" || ev.error === "interrupted") return;
+      i += 1;
+      next();
+    };
+
     onSegStart && onSegStart(seg.id, i);
     window.speechSynthesis.speak(u);
   };
+
   next();
   return true;
 }
@@ -144,7 +176,7 @@ export function narasikan(segments, onSegStart, onEnd, onError) {
 // Text-to-Speech Bahasa Indonesia (Web Speech API)
 export function bicara(teks, onWord, onEnd) {
   if (!("speechSynthesis" in window)) return null;
-  window.speechSynthesis.cancel();
+  stopBicara();
   const u = new SpeechSynthesisUtterance(teks);
   u.lang = "id-ID";
   u.rate = 0.95;
@@ -158,5 +190,11 @@ export function bicara(teks, onWord, onEnd) {
 }
 
 export function stopBicara() {
-  if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+  if (cancelCurrentNarasi) {
+    cancelCurrentNarasi();
+    cancelCurrentNarasi = null;
+  }
+  if ("speechSynthesis" in window) {
+    window.speechSynthesis.cancel();
+  }
 }

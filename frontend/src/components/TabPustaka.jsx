@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "./ui/accordion";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "./ui/dialog";
 import { BundaAyahCard } from "./BundaAyahCard";
@@ -18,6 +18,14 @@ const toSoal = (t) => ({
 export const TabPustaka = ({ onSimpanRiwayat }) => {
   const [terpilih, setTerpilih] = useState(null);
   const fases = ["A", "B", "C", "D"];
+
+  // Safety: pastikan interaksi halaman tidak terkunci saat tab dilepas
+  useEffect(() => {
+    return () => {
+      document.body.style.pointerEvents = "";
+      document.body.style.overflow = "";
+    };
+  }, []);
 
   const buka = (t) => {
     const soal = toSoal(t);

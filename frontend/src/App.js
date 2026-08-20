@@ -88,13 +88,11 @@ function App() {
       <HeaderMenu onDemo={jalankanDemo} aiAktif={aiAktif} riwayat={riwayat} onBukaRiwayat={bukaRiwayat} />
 
       <main className="px-4 pt-4 pb-28">
-        <AnimatePresence mode="wait">
-          <motion.div key={tab} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.25 }}>
-            {tab === "foto" && <TabFoto onSimpanRiwayat={simpanRiwayat} initialHasil={injected} />}
-            {tab === "pustaka" && <TabPustaka onSimpanRiwayat={simpanRiwayat} />}
-            {tab === "curhat" && <TabCurhat />}
-          </motion.div>
-        </AnimatePresence>
+        <motion.div key={tab} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
+          {tab === "foto" && <TabFoto onSimpanRiwayat={simpanRiwayat} initialHasil={injected} />}
+          {tab === "pustaka" && <TabPustaka onSimpanRiwayat={simpanRiwayat} />}
+          {tab === "curhat" && <TabCurhat />}
+        </motion.div>
       </main>
 
       {/* Bottom Nav */}

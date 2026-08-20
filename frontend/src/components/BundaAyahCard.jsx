@@ -45,14 +45,16 @@ export const BundaAyahCard = ({ soal, panggilan = "Bunda", onUpvote }) => {
 
   if (!soal) return null;
 
+  const skripList = Array.isArray(soal.skrip_sokratik) ? soal.skrip_sokratik : [];
+
   const segmenNarasi = [
-    { id: "konsep", teks: `Halo ${panggilan}. Yuk kita pahami dulu konsepnya. ${soal.konsep_kurikulum}` },
-    { id: "analogi", teks: `Sekarang, mari pakai analogi sederhana. ${soal.analogi_dapur}` },
-    ...soal.skrip_sokratik.map((k, idx) => ({
+    { id: "konsep", teks: `Halo ${panggilan}. Yuk kita pahami dulu konsepnya. ${soal.konsep_kurikulum || ""}` },
+    { id: "analogi", teks: `Sekarang, mari pakai analogi sederhana. ${soal.analogi_dapur || ""}` },
+    ...skripList.map((k, idx) => ({
       id: `skrip-${idx}`,
-      teks: `Langkah ke ${k.langkah}. Coba tanyakan pada si Kecil: ${k.tanya_anak}`,
+      teks: `Langkah ke ${k.langkah || idx + 1}. Coba tanyakan pada si Kecil: ${k.tanya_anak || ""}`,
     })),
-    { id: "emosi", teks: `Jika si Kecil mulai rewel atau malas, tenangkan dengan lembut. ${soal.skrip_penjinak_emosi}` },
+    { id: "emosi", teks: `Jika si Kecil mulai rewel atau malas, tenangkan dengan lembut. ${soal.skrip_penjinak_emosi || ""}` },
   ];
 
   const putarSuara = () => {
@@ -84,12 +86,12 @@ export const BundaAyahCard = ({ soal, panggilan = "Bunda", onUpvote }) => {
   const kirimWA = () => {
     const pesan =
       `*Panduan Bimbingan PR dari TutorOrangTua AI* 🇮🇩\n\n` +
-      `📌 *${soal.judul_singkat}*\n\n` +
-      `🎯 *Konsep:* ${soal.konsep_kurikulum}\n\n` +
-      `💡 *Analogi:* ${soal.analogi_dapur}\n\n` +
+      `📌 *${soal.judul_singkat || "Bimbingan PR"}*\n\n` +
+      `🎯 *Konsep:* ${soal.konsep_kurikulum || ""}\n\n` +
+      `💡 *Analogi:* ${soal.analogi_dapur || ""}\n\n` +
       `🗣️ *Skrip Bimbingan:*\n` +
-      soal.skrip_sokratik.map((k) => `${k.langkah}. ${k.tanya_anak}`).join("\n") +
-      `\n\n🚨 *Jika anak rewel:* ${soal.skrip_penjinak_emosi}` +
+      skripList.map((k) => `${k.langkah || ""}. ${k.tanya_anak || ""}`).join("\n") +
+      `\n\n🚨 *Jika anak rewel:* ${soal.skrip_penjinak_emosi || ""}` +
       `\n\n_Dibuat dengan penuh kasih oleh TutorOrangTua AI_`;
     window.open(`https://wa.me/?text=${encodeURIComponent(pesan)}`, "_blank");
   };
@@ -250,10 +252,10 @@ export const BundaAyahCard = ({ soal, panggilan = "Bunda", onUpvote }) => {
 
         <Section icon={MessageSquareText} judul="Skrip Bimbingan 3 Langkah Sokratik" tint="bg-muted" testid="seksi-skrip" active={segAktif && segAktif.startsWith("skrip")}>
           <div className="space-y-3">
-            {soal.skrip_sokratik.map((k, idx) => (
-              <div key={k.langkah} className={`relative pl-8 rounded-lg transition-all duration-300 ${segAktif === `skrip-${idx}` ? "bg-secondary/25 py-2 pr-2 -ml-1 pl-9" : ""}`}>
+            {(soal.skrip_sokratik || []).map((k, idx) => (
+              <div key={k.langkah || idx} className={`relative pl-8 rounded-lg transition-all duration-300 ${segAktif === `skrip-${idx}` ? "bg-secondary/25 py-2 pr-2 -ml-1 pl-9" : ""}`}>
                 <span className="absolute left-0 top-0 grid place-items-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold">
-                  {k.langkah}
+                  {k.langkah || idx + 1}
                 </span>
                 <p className="font-medium text-foreground">“{k.tanya_anak}”</p>
                 {k.jika_anak_salah && (

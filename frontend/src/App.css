@@ -1,0 +1,10 @@
+.App {
+    text-align: left;
+}
+
+/* xs breakpoint helper for very small toggles */
+@media (min-width: 400px) {
+    .xs\:flex {
+        display: flex;
+    }
+}

@@ -1,0 +1,179 @@
+{
+  "project_context": {
+    "app_name": "TutorOrangTua AI",
+    "tagline": "Co-Pilot Bimbing PR & Parenting Kurikulum Merdeka Terlengkap",
+    "app_type": "mobile_web_app",
+    "target_audience": "Indonesian parents (Bunda/Ayah) guiding children in SD-SMP Kurikulum Merdeka",
+    "emotional_tone": "Warm, reassuring, family-friendly, patient, optimistic",
+    "language": "Indonesian (100%) - Use terms like Bunda, Ayah, Kakak, Adik."
+  },
+  "colors": {
+    "strategy": "Warm & Reassuring Parenting (Organic & Earthy). Soft Emerald for trust/growth, Warm Amber for joy/energy, Clean Cream for a comforting baseline.",
+    "tailwind_vars_light": {
+      "--background": "48 100% 96%",
+      "--foreground": "175 61% 19%",
+      "--card": "0 0% 100%",
+      "--card-foreground": "175 61% 19%",
+      "--popover": "0 0% 100%",
+      "--popover-foreground": "175 61% 19%",
+      "--primary": "175 77% 26%",
+      "--primary-foreground": "0 0% 100%",
+      "--secondary": "38 92% 50%",
+      "--secondary-foreground": "175 61% 19%",
+      "--muted": "48 40% 90%",
+      "--muted-foreground": "175 20% 40%",
+      "--accent": "38 92% 50%",
+      "--accent-foreground": "175 61% 19%",
+      "--destructive": "0 84.2% 60.2%",
+      "--destructive-foreground": "0 0% 98%",
+      "--border": "48 30% 85%",
+      "--input": "48 30% 85%",
+      "--ring": "175 77% 26%",
+      "--radius": "1rem"
+    },
+    "tailwind_vars_dark": {
+      "--background": "175 61% 9%",
+      "--foreground": "48 100% 96%",
+      "--card": "175 50% 13%",
+      "--card-foreground": "48 100% 96%",
+      "--popover": "175 50% 13%",
+      "--popover-foreground": "48 100% 96%",
+      "--primary": "175 77% 40%",
+      "--primary-foreground": "175 61% 9%",
+      "--secondary": "38 92% 60%",
+      "--secondary-foreground": "175 61% 9%",
+      "--muted": "175 30% 20%",
+      "--muted-foreground": "175 20% 70%",
+      "--accent": "38 92% 60%",
+      "--accent-foreground": "175 61% 9%",
+      "--destructive": "0 62.8% 30.6%",
+      "--destructive-foreground": "0 0% 98%",
+      "--border": "175 30% 20%",
+      "--input": "175 30% 20%",
+      "--ring": "175 77% 40%",
+      "--radius": "1rem"
+    },
+    "rules": [
+      "CRITICAL: Replace default Vercel/Shadcn neutral colors with the tinted values above. Background must be the clean cream (#FFFBEB in light mode).",
+      "No generic blue or pure grey. Always use the tinted teal/cream palette.",
+      "Use Primary (Emerald #0F766E) for trust/core actions like 'Foto Soal', 'Bimbing PR'.",
+      "Use Secondary (Amber #F59E0B) for delightful/attention elements like 'Demo', 'Tips', or interactive toggles."
+    ]
+  },
+  "typography": {
+    "fonts": {
+      "heading": "Manrope",
+      "body": "DM Sans"
+    },
+    "scale_rules": {
+      "h1": "text-2xl sm:text-3xl tracking-tight font-extrabold text-foreground",
+      "h2": "text-xl sm:text-2xl tracking-tight font-bold text-foreground",
+      "h3": "text-lg sm:text-xl font-bold text-foreground",
+      "body": "text-base leading-relaxed font-medium text-foreground/90",
+      "labels": "text-xs tracking-[0.15em] uppercase font-bold text-muted-foreground"
+    },
+    "rules": [
+      "BANNED: Inter, Roboto, Open Sans for headings.",
+      "Headings must use tight letter spacing (tracking-tight).",
+      "Include Manrope and DM Sans from Google Fonts in index.html.",
+      "Labels must be uppercase with wide spacing."
+    ]
+  },
+  "surfaces": {
+    "cards": "Solid background (white or cream), generous 16px to 24px border-radius (rounded-2xl/3xl), subtle 1px border (border-border), no harsh shadows. Soft ambient shadow for active/lifted cards (shadow-[0_8px_30px_rgba(15,118,110,0.08)]).",
+    "glassmorphism": "Used ONLY for sticky top header and bottom navigation to maintain context while scrolling. (backdrop-blur-xl bg-background/80 border-b/t border-border). NEVER use completely transparent backgrounds where content scrolls underneath.",
+    "buttons": "Pill-shaped (rounded-full) for primary actions. Rectangular with rounded-xl for secondary/grid buttons."
+  },
+  "layout_spacing": {
+    "mobile_first": true,
+    "max_width": "max-w-md mx-auto relative min-h-screen bg-background shadow-2xl overflow-x-hidden",
+    "spacing_scale": "Generous padding. Use p-4 to p-6 inside cards. Use gap-4 to gap-6 between layout elements.",
+    "bento_grid": "For the 'Kartu Panduan Bunda/Ayah', use a dense, single-column bento card sequence to step through the output logically."
+  },
+  "motion_interactions": {
+    "micro_interactions": "All buttons must have hover:-translate-y-0.5, active:scale-95, and transition-transform duration-200.",
+    "child_proof_lock": "CRITICAL: The 'Kunci Jawaban' must be a swipe-to-unlock mechanism. Use framer-motion <motion.div drag='x'> constraint to create a slider. Parents must drag the knob to the right to reveal the answer, preventing kids from cheating.",
+    "page_transitions": "Use Framer Motion to stagger-fade list items and cards for a premium feel."
+  },
+  "component_instructions": {
+    "AppContainer": "Wrap the entire app in a div with 'max-w-md mx-auto min-h-screen relative'. The UI is strictly mobile-first.",
+    "Header": {
+      "layout": "Sticky top, glassmorphism, z-50.",
+      "elements": [
+        "Top micro-banner (Dukungan Lomba) - scrolling text (Marquee) or small solid ribbon.",
+        "Main Header row: Logo (Text + Icon), 'Demo 60 Detik' (Amber Pill Button), and a Hamburger Menu (Shadcn Sheet)."
+      ],
+      "drawer_menu": "Use a Shadcn Sheet for the Hamburger Menu to house: Pengaturan Kunci API, Kalkulator Penghematan Biaya Les (Modal), Rencana Bisnis, Simulasi Marah vs Sabar, Riwayat Bimbingan."
+    },
+    "BottomNav": {
+      "layout": "Fixed bottom, glassmorphism, z-50, grid cols-3, max-w-md mx-auto.",
+      "tabs": [
+        {"icon": "Camera/House", "label": "Bimbing PR"},
+        {"icon": "Books", "label": "Pustaka"},
+        {"icon": "ChatTeardrop", "label": "Curhat"}
+      ]
+    },
+    "PhotoBimbingTab": {
+      "layout": "Main Home View.",
+      "elements": [
+        "Large 'Ambil Foto Soal' action block (Emerald background, text-white, prominent Camera icon).",
+        "Or 'Pilih dari Galeri' secondary button (HTML5 <input type='file' accept='image/*'>).",
+        "Horizontal scrolling row (overflow-x-auto snap-x) showing 6 'Galeri Contoh Foto Soal' (use provided sample image URLs) so users can test immediately."
+      ]
+    },
+    "BundaAyahCard": {
+      "layout": "The AI Output Component. Appears after a photo is processed.",
+      "sections": [
+        "1. Konsep Kurikulum: Clean card, light Emerald tint.",
+        "2. Analogi Benda Dapur: Amber tinted card, playful kitchen icon.",
+        "3. Skrip Sokratik (3 Langkah): Stepper format guiding parents on what to ask.",
+        "4. Taktik Penjinak Emosi: Muted card, heart icon.",
+        "5. Kunci Jawaban (Child-Proof Lock): Blurred/Locked area. Swipe to reveal."
+      ],
+      "actions": "Bilah aksi berbagi di bawah kartu: WhatsApp (icon), Putar Suara (Web Speech API TTS), Cetak PDF (window.print)."
+    },
+    "LibraryTab": {
+      "layout": "Pustaka 50+ Topik Kurikulum Merdeka. Use Shadcn Accordions grouped by Fase A, B, C, D."
+    },
+    "ChatTab": {
+      "layout": "Ruang Curhat Parenting. Simple chat UI interface (bubbles) mapped to Gemini AI."
+    },
+    "CalculatorModal": {
+      "layout": "Shadcn Dialog/Modal. Kalkulator Penghematan Biaya Les. Input monthly tutoring cost -> Output savings. Use canvas-confetti on calculation."
+    }
+  },
+  "media": {
+    "image_urls": {
+      "sample_homework_1": "https://images.pexels.com/photos/7015903/pexels-photo-7015903.jpeg",
+      "sample_homework_2": "https://images.pexels.com/photos/7014772/pexels-photo-7014772.jpeg",
+      "sample_homework_3": "https://images.unsplash.com/photo-1735191003674-a9d4cd3b099e",
+      "sample_homework_4": "https://images.unsplash.com/photo-1724293720197-7e99446d953a",
+      "sample_homework_5": "https://images.pexels.com/photos/1822375/pexels-photo-1822375.jpeg",
+      "sample_homework_6": "https://images.unsplash.com/photo-1549431971-f54b3f5c82d8",
+      "parent_child_study_1": "https://images.unsplash.com/photo-1758525861793-9258e09708e2",
+      "parent_child_study_2": "https://images.unsplash.com/photo-1758687126445-98edd4b15ba6"
+    },
+    "icons": {
+      "library": "@phosphor-icons/react",
+      "style": "Duotone, size 24. Highly recommended for a friendly, premium aesthetic."
+    }
+  },
+  "accessibility": {
+    "testing": "All interactive elements MUST include a data-testid attribute (e.g., data-testid='upload-photo-btn').",
+    "contrast": "Ensure text over Amber (#F59E0B) is dark (#134E4A), text over Emerald (#0F766E) is white.",
+    "tts": "Integrate standard Web Speech API (window.speechSynthesis) for the 'Putar Suara' text-to-speech button."
+  },
+  "libraries_to_install": [
+    "yarn add framer-motion @phosphor-icons/react sonner react-markdown remark-gfm canvas-confetti react-fast-marquee"
+  ],
+  "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": [
+    "You tend to converge toward generic, 'on distribution' SaaS outputs. Do NOT make this look like a standard Vercel app.",
+    "Embrace the mobile-first constraint: force the UI into a max-w-md centered container with a bottom navigation bar. It should feel like a native iOS/Android parenting app.",
+    "Do NOT use pure white background unless it is specifically inside a card. The body background MUST be the clean cream (--background).",
+    "Add transition-transform duration-200 to all interactive elements. Never apply 'transition-all' as it breaks transforms.",
+    "The 'Child-Proof Lock' MUST use framer-motion for the drag slider interaction. This is a core differentiator.",
+    "Never use placeholders for images. Map the sample_homework URLs provided into the horizontal scrolling gallery.",
+    "All UI text MUST be in Indonesian. Use warm familial terms (Bunda, Ayah, Kakak, Adik) in placeholder texts and empty states.",
+    "Implement the 'Bunda/Ayah Guide Cards' as an emotionally directed, structured view, not a raw Markdown dump."
+  ]
+}
